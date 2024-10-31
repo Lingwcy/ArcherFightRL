@@ -1,23 +1,19 @@
-import time
 from time import sleep
 from game_helper.detect import detect_border_type,detect_border
 import cv2
-import matplotlib.pyplot as plt
 import gymnasium
 import mss
 import numpy as np
 import re
 import pygetwindow as gw
-from game_helper.reset_game import compare_images,resize_image
+from game_helper.reset_game import compare_images
 import pytesseract
 import win32gui
-from gymnasium import Space, spaces
+from gymnasium import spaces
 from stable_baselines3.common.vec_env.base_vec_env import VecEnvStepReturn
-from lib.keyboard_helper import *
+from game_helper.keyboard_helper import *
 from typing import Optional
 from game_helper.reset_game import reset_game
-import threading
-
 
 pytesseract.pytesseract.tesseract_cmd = (
     r"D:\\Tesseract-OCR\\tesseract.exe"
