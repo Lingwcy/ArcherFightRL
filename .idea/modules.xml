@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/ArcherFight.iml" filepath="$PROJECT_DIR$/.idea/ArcherFight.iml" />
+      <module fileurl="file://$USER_HOME$/Desktop/MapleAITrainer-main/.idea/MapleAITrainer-main.iml" filepath="$USER_HOME$/Desktop/MapleAITrainer-main/.idea/MapleAITrainer-main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../SB3/.idea/SB3.iml" filepath="$PROJECT_DIR$/../SB3/.idea/SB3.iml" />
+    </modules>
+  </component>
+</project>
