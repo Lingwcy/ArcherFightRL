@@ -98,7 +98,7 @@ class ArcherFightEnv(gymnasium.Env):
         if self.previous_health < 0.06:
             print("-----------------角色死亡判断------------------")
             # 预先准备的角色死亡截图路径
-            death_img_path = 'source/offline_channel/1.png'
+            death_img_path = '../source/offline_channel/1.png'
             print('死亡判断....')
             with mss.mss() as sct:
                 sc_grab = sct.grab(self.window_location)

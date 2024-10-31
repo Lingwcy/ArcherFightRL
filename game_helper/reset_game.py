@@ -40,9 +40,9 @@ def reset_game(mode, window_location):
 
 def reset_offline_game(window_location):
     # 预先准备的角色死亡截图路径
-    death_img_path = 'source/offline_channel/1.png'
+    death_img_path = '../source/offline_channel/1.png'
     print('重启等待中....')
-    time.sleep(10)
+    time.sleep(5)
     # 截取的当前模拟器屏幕图像路径
     with mss.mss() as sct:
         sc_grab = sct.grab(window_location)
@@ -50,82 +50,12 @@ def reset_offline_game(window_location):
     screen_image = cv2.cvtColor(np.array(sc_grab), cv2.COLOR_RGB2BGR)
     similarity = compare_images(death_img_path, screen_image)
     # 设置阈值
-    threshold = 0.7
+    threshold = 0.6
     print('相似度:', similarity)
     if similarity > threshold:
         print("角色死亡，游戏结束，准备重启游戏...")
         # # 重启游戏的代码
-        x, y = find_game_window_position_right_bottom(window_location)
-        mouse = Controller()
-        mouse.position = (x - x * 0.17, y - y * 0.25)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 2.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.17, y - y * 0.15)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 3.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.17, y - y * 0.25)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 4.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.6, y - y * 0.15)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-
-
-        # 执行 重启游戏 脚本
-
-    else:
-        print("游戏正在进行中...")
-def reset_offline_game2(window_location):
-    # 预先准备的角色死亡截图路径
-    death_img_path = '../source/offline_channel/1.png'
-    print('重启等待中....')
-    time.sleep(1)
-    # 截取的当前模拟器屏幕图像路径
-    with mss.mss() as sct:
-        sc_grab = sct.grab(window_location)
-    # 注意：mss抓取的图像是RGB格式，且包含透明度通道，需要转换为BGR格式
-    screen_image = cv2.cvtColor(np.array(sc_grab), cv2.COLOR_RGB2BGR)
-    similarity = compare_images(death_img_path, screen_image)
-    # 设置阈值
-    threshold = 0.1
-    print('相似度:', similarity)
-    if similarity > threshold:
-        print("角色死亡，游戏结束，准备重启游戏...")
-        # 重启游戏的代码
-        x, y = find_game_window_position_right_bottom(window_location)
-        mouse = Controller()
-        mouse.position = (x - x * 0.2, y - y * 0.25)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 2.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.2, y - y * 0.15)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 3.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.2, y - y * 0.25)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
-        # pic 4.png
-        time.sleep(2)
-        mouse.position = (x - x * 0.65, y - y * 0.15)
-        mouse.press(Button.left)
-        time.sleep(0.5)
-        mouse.release(Button.left)
+        do_offline_reset_game_channel(window_location,1)
     else:
         print("游戏正在进行中...")
 def find_game_window_position_right_bottom(window_location):
@@ -137,22 +67,53 @@ def find_game_window_position_right_bottom(window_location):
     return  right_bottom_x, right_bottom_y
 
 
-def do_offline_reset_game_channel(window_location):
+def do_offline_reset_game_channel(window_location,scale_factor):
+    local = {'left': window_location['left'] / scale_factor, 'top': window_location['top'] / scale_factor, 'width': window_location['width'] / scale_factor, 'height': window_location['height'] /scale_factor}
     mouse = Controller()
-    window_width = window_location['width']
-    window_height = window_location['height']
+    window_width = local['width']
+    window_height = local['height']
     # 过程 1.png
-    x = int(window_width / 2)
-    y = int(window_height / 2)
-
+    x = int(local['left'] + 0.78*window_width)
+    y = int(local['top'] + 0.75*window_height)
     mouse.position = (x,y)
-    # mouse.press(Button.left)
-    # time.sleep(0.5)
-    # mouse.release(Button.left)
+    mouse.press(Button.left)
+    time.sleep(0.5)
+    mouse.release(Button.left)
 
+    time.sleep(1)
 
-window_location ={'left': 749/2, 'top': 175/2, 'width': 1496, 'height': 912}
-do_offline_reset_game_channel(window_location)
+    # 过程 2.png
+    x = int(local['left'] + 0.8*window_width)
+    y = int(local['top'] + 0.85*window_height)
+    mouse.position = (x,y)
+    mouse.press(Button.left)
+    time.sleep(0.5)
+    mouse.release(Button.left)
+
+    time.sleep(1)
+
+    # 过程 3.png
+    x = int(local['left'] + 0.77*window_width)
+    y = int(local['top'] + 0.75*window_height)
+    mouse.position = (x,y)
+    mouse.press(Button.left)
+    time.sleep(0.5)
+    mouse.release(Button.left)
+
+    time.sleep(1)
+
+    # 过程 4.png
+    x = int(local['left'] + 0.28*window_width)
+    y = int(local['top'] + 0.82*window_height)
+    mouse.position = (x,y)
+    mouse.press(Button.left)
+    time.sleep(0.5)
+    mouse.release(Button.left)
+
+# window_location ={'left': 1211, 'top': 186, 'width': 1211, 'height': 752}
+# #
+# # print(scale_properties(window_location,1/2))
+# do_offline_reset_game_channel(window_location,2)
 # #find_game_window_position_right_bottom({'top': 198, 'left': 1328, 'width': 1184, 'height': 701})
 # x, y = find_game_window_position_right_bottom(window_location)
 # mouse = Controller()
