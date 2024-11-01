@@ -33,8 +33,8 @@ def draw_border_detect_roi(frame, window_width, window_height):
     window_height (int): 游戏窗口的高度。
     """
     # 计算矩形的宽度和高度（基于游戏窗口宽高比0.25）
-    rect_width = int(window_width * 0.13)
-    rect_height = int(window_height * 0.18)
+    rect_width = int(window_width * 0.08)
+    rect_height = int(window_height * 0.15)
 
     # 计算矩形的中心位置
     center_x = int(window_width / 2)
@@ -62,7 +62,7 @@ def draw_hp_detect_roi(frame, window_width, window_height):
 
     # 计算矩形的中心位置
     center_x = int(window_width / 2)
-    center_y = int(window_height / 2.19)
+    center_y = int(window_height / 2.25)
 
     # 计算矩形的左上角和右下角坐标
     rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))
@@ -87,7 +87,7 @@ def draw_score_detect_roi(frame, window_width, window_height):
 
     # 计算矩形的中心位置
     center_x = int(window_width / 1.04)
-    center_y = int(window_height / 4)
+    center_y = int(window_height / 4.2)
 
     # 计算矩形的左上角和右下角坐标
     rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))

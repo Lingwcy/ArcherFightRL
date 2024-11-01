@@ -1,3 +1,4 @@
+import time
 from time import sleep
 from game_helper.detect import detect_border_type,detect_border
 import cv2
@@ -31,7 +32,7 @@ class ArcherFightEnv(gymnasium.Env):
         self.window_id = win32gui.FindWindow(None, self.GAME_WINDOW_TITLE)
         # 行为
         self.action_space = spaces.MultiDiscrete(
-            [8, 10]  # 移动  # 单次移动时间(0-10)->(0-1s)
+            [8, 20 ,20]  # 移动  # 单次移动时间(0-10)->(0-1s)
         )
 
         # 观测空间
@@ -55,13 +56,14 @@ class ArcherFightEnv(gymnasium.Env):
         self.previous_health = 0
         self.previous_exp = 0
         self.previous_score = 0
+        self.previous_move_time = 0
 
-        print(self.window_location)
+        # self.check_dead()
         # 如果是重启游戏，则发起等待...，然后启动重启逻辑
         if not self.is_first_epoch:
             reset_game('offline',self.window_location)
 
-
+        time.sleep(3)
         # 观测图像，原始图像
         obs = self.get_game_frame()
 
@@ -83,11 +85,11 @@ class ArcherFightEnv(gymnasium.Env):
 
         print('移动:',self.MOVEMENT_KEYS[actions[0]])
         # 移动时间
-        move_time = actions[1] / 3
-        print('移动时间:', move_time)
+        self.previous_move_time = actions[1] * (1 / max(actions[2], 1))
+        print('移动时间:', self.previous_move_time)
         # 执行 action
         key_down(self.MOVEMENT_KEYS[actions[0]])
-        sleep(move_time)
+        time.sleep(self.previous_move_time)
         key_up(self.MOVEMENT_KEYS[actions[0]])
         # 从最新的观测来计算 reward
         obs = self.get_game_frame()
@@ -95,23 +97,7 @@ class ArcherFightEnv(gymnasium.Env):
 
         self.reward = self.get_current_reward(obs)
         # 判断角色是否死亡
-        if self.previous_health < 0.06:
-            print("-----------------角色死亡判断------------------")
-            # 预先准备的角色死亡截图路径
-            death_img_path = '../source/offline_channel/1.png'
-            print('死亡判断....')
-            with mss.mss() as sct:
-                sc_grab = sct.grab(self.window_location)
-            screen_image = cv2.cvtColor(np.array(sc_grab), cv2.COLOR_RGB2BGR)
-            similarity = compare_images(death_img_path, screen_image)
-            threshold = 0.6
-            print('相似度:', similarity)
-            if similarity > threshold:
-                print("角色死亡，游戏结束，准备重启游戏...")
-                self.is_first_epoch = False
-                self.done = True
-            else:
-                print("游戏正在进行中...")
+        self.check_dead()
         return self.modify_observation(obs), self.reward, self.done, False, {}
 
 
@@ -148,12 +134,47 @@ class ArcherFightEnv(gymnasium.Env):
         :return:
         """
         reward = 0
-        reward += self.get_exp_gained(game_frame) * 100  #等级的奖励是 10 倍率
+        # reward += self.get_exp_gained(game_frame) * 100  #等级的奖励是 10 倍率
         reward += self.get_score_gained() * 1# 分数奖励是 1 倍率
         reward += self.get_health_gained() * 100
-        reward -= self.get_border_gained() * 100 # 接触墙体 -> 0.1 接触边界 -> 0.3  倍率 1000
+        reward -= self.get_border_gained() * 30 # 接触墙体 -> 0.1 接触边界 -> 0.3  倍率 30
+        reward += self.get_move_gained() # 长时间移动惩罚
         print('本轮总得分:', reward)
         return reward
+    def check_dead(self):
+        # 若 self.previous_health > 0.75 则 游戏界面处于 重启游戏的 2.png
+        if self.previous_health < 0.06 or self.previous_health > 0.75:
+            print("-----------------角色死亡判断------------------")
+            # 预先准备的角色死亡截图路径
+            death_img_path = 'source/offline_channel/1.png'
+            death_img_path2 = 'source/offline_channel/2.png'
+            print('死亡判断....')
+            with mss.mss() as sct:
+                sc_grab = sct.grab(self.window_location)
+            screen_image = cv2.cvtColor(np.array(sc_grab), cv2.COLOR_RGB2BGR)
+            similarity = compare_images(death_img_path, screen_image)
+            similarity2 = compare_images(death_img_path2, screen_image)
+            threshold = 0.6
+            print('相似度1:', similarity)
+            print('相似度2:', similarity2)
+            if similarity > threshold or similarity2 > threshold:
+                print("角色死亡，游戏结束，准备重启游戏...")
+                self.is_first_epoch = False
+                self.done = True
+            else:
+                print("游戏正在进行中...")
+    def get_move_gained(self)-> int:
+        """
+        ai经常走3秒以上一步，这是完全无效的长时间移动，如果AI走的越久，惩罚越大
+        :return:
+        """
+        move_time = self.previous_move_time
+        if move_time > 2:  # 如果移动时间超过2秒，开始施加惩罚
+            punishment = move_time - 2  # 超过的时间越长，惩罚越大
+            punishment = -(punishment * 5)
+            print('移动惩罚分:', punishment)
+            return punishment # 惩罚系数可以根据需要调整
+        else: return 0
     def get_border_gained(self) -> float:
         roi = self.get_border_detect_roi()
         border_image = detect_border(roi,self.border_type)
@@ -309,8 +330,8 @@ class ArcherFightEnv(gymnasium.Env):
         window_height (int): 游戏窗口的高度。
         """
         # 计算矩形的宽度和高度（基于游戏窗口宽高比0.25）
-        rect_width = int(window_width * 0.13)
-        rect_height = int(window_height * 0.18)
+        rect_width = int(window_width * 0.08)
+        rect_height = int(window_height * 0.15)
 
         # 计算矩形的中心位置
         center_x = int(window_width / 2)
@@ -338,7 +359,7 @@ class ArcherFightEnv(gymnasium.Env):
 
         # 计算矩形的中心位置
         center_x = int(window_width / 2)
-        center_y = int(window_height / 2.19)
+        center_y = int(window_height / 2.25)
 
         # 计算矩形的左上角和右下角坐标
         rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))
@@ -360,7 +381,7 @@ class ArcherFightEnv(gymnasium.Env):
         rect_height = int(window_height * 0.03)
 
         center_x = int(window_width / 1.04)
-        center_y = int(window_height / 4)
+        center_y = int(window_height / 4.2)
 
         # 计算矩形的左上角和右下角坐标
         rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))
@@ -374,8 +395,8 @@ class ArcherFightEnv(gymnasium.Env):
         window_width = self.window_location['width']
         window_height = self.window_location['height']
         # 计算矩形的宽度和高度（基于游戏窗口宽高比0.25）
-        rect_width = int(window_width * 0.13)
-        rect_height = int(window_height * 0.18)
+        rect_width = int(window_width * 0.08)
+        rect_height = int(window_height * 0.15)
 
         # 计算矩形的中心位置
         center_x = int(window_width / 2)
@@ -397,7 +418,7 @@ class ArcherFightEnv(gymnasium.Env):
 
         # 计算矩形的中心位置
         center_x = int(window_width / 2)
-        center_y = int(window_height / 2.19)
+        center_y = int(window_height / 2.25)
 
         # 计算矩形的左上角和右下角坐标
         rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))
@@ -413,7 +434,7 @@ class ArcherFightEnv(gymnasium.Env):
         rect_height = int(window_height * 0.03)
 
         center_x = int(window_width / 1.04)
-        center_y = int(window_height / 4)
+        center_y = int(window_height / 4.2)
 
         # 计算矩形的左上角和右下角坐标
         rect_top_left = (center_x - int(rect_width / 2), center_y - int(rect_height / 2))

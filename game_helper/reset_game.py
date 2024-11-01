@@ -40,7 +40,8 @@ def reset_game(mode, window_location):
 
 def reset_offline_game(window_location):
     # 预先准备的角色死亡截图路径
-    death_img_path = '../source/offline_channel/1.png'
+    death_img_path = 'source/offline_channel/1.png'
+    death_img_path2 = 'source/offline_channel/2.png'
     print('重启等待中....')
     time.sleep(5)
     # 截取的当前模拟器屏幕图像路径
@@ -49,10 +50,11 @@ def reset_offline_game(window_location):
     # 注意：mss抓取的图像是RGB格式，且包含透明度通道，需要转换为BGR格式
     screen_image = cv2.cvtColor(np.array(sc_grab), cv2.COLOR_RGB2BGR)
     similarity = compare_images(death_img_path, screen_image)
+    similarity2 = compare_images(death_img_path2, screen_image)
     # 设置阈值
     threshold = 0.6
     print('相似度:', similarity)
-    if similarity > threshold:
+    if similarity > threshold or similarity2 > threshold:
         print("角色死亡，游戏结束，准备重启游戏...")
         # # 重启游戏的代码
         do_offline_reset_game_channel(window_location,1)
@@ -109,8 +111,6 @@ def do_offline_reset_game_channel(window_location,scale_factor):
     mouse.press(Button.left)
     time.sleep(0.5)
     mouse.release(Button.left)
-
-# window_location ={'left': 1211, 'top': 186, 'width': 1211, 'height': 752}
 # #
 # # print(scale_properties(window_location,1/2))
 # do_offline_reset_game_channel(window_location,2)
