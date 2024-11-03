@@ -5,16 +5,12 @@ game_window = "MuMu模拟器12"
 total_scores = []  # 用来存储每个episode的总分数
 
 for episode in range(episodes):
-    print("游戏初始化...")
     obs = env.reset()
     episode_score = 0  # 初始化当前episode的分数
     while True:
         random_action = env.action_space.sample()
-        # print("\naction", random_action)
         observation, reward, terminated, truncated, info = env.step(random_action)
-        # print('reward', reward)
-        # print('terminated', terminated)
-        # print('truncated', truncated)
+        print(info)
         episode_score += reward  # 累加当前步骤的奖励到episode分数
         if terminated:
             print("本轮游戏结束...")
