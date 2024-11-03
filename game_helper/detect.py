@@ -16,7 +16,7 @@ def blue_border_detect(roi):
     # plt.imshow(resize_image)
     # plt.show()
     return resize_image
-
+#测试
 
 def gray_border_detect(roi):
     # 定义颜色范围
